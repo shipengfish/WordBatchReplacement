@@ -58,3 +58,4 @@
 
 下载 `Word Replacer.zip` 解压得到 `Word Replacer.exe` 或者 `Word Replacer.app` 执行文件，双击运行即可
 
+### 最后感慨一句，GPT 真是牛逼，是这个时代最好的武器
