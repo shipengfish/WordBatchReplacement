@@ -26,7 +26,7 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           [],
-          name='Word Replacer',
+          name='多文档替换器',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
@@ -37,7 +37,8 @@ exe = EXE(pyz,
           disable_windowed_traceback=False,
           target_arch='x86_64',
           codesign_identity=None,
-          entitlements_file=None )
+          entitlements_file=None,
+          icon='icon.ico')
 
 # mac 使用以下规则
 
@@ -64,7 +65,7 @@ exe = EXE(pyz,
 #          a.scripts,
 #          [],
 #          exclude_binaries=True,
-#          name='Word Replacer',
+#          name='多文档替换器',
 #          debug=False,
 #          bootloader_ignore_signals=False,
 #          strip=False,
@@ -82,10 +83,10 @@ exe = EXE(pyz,
 #               strip=False,
 #               upx=True,
 #               upx_exclude=[],
-#               name='Word Replacer')
+#               name='多文档替换器')
 #
 #app = BUNDLE(coll,
-#             name='Word Replacer.app',
+#             name='多文档替换器.app',
 #             icon='icon.icns',  # 确保您有一个有效的 .icns 文件
 #             bundle_identifier=None,
 #             info_plist={

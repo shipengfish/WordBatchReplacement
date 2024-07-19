@@ -27,13 +27,15 @@
 
 最终的界面如下：
 
-![img.png](img.png)
+![img_1.png](img_1.png)
 
 ## 主要功能有：
 
-1. 自由选择需要替换的 word 文件/文件夹
+文件纯本地执行，隐私有保证。
+
+1. 自由选择需要替换的 word、excel、markdown、txt 文件/文件夹
 2. 支持拖拽文件、文件夹
-3. 支持批量移除 word 文件
+3. 支持批量移除 word、excel、markdown、txt 文件
 4. 支持重复文件去重
 5. 自定义替换规则，支持规则组
 6. 支持替换进度条显示
@@ -42,17 +44,27 @@
 9. 支持操作日志、日志清理
 10. 支持变更详情
 11. 支持右键移除、跳转到资源文件
+12. 支持文件列表搜索过滤
+13. 支持自定义执行线程数
+14. 支持文件预览
+15. 支持导入、导出替换规则
 
 
 ## 开发过程
 
 1. 安装 python
-2. 安装需要的依赖 `pip3 install PyQt6 python-docx pyinstaller`
+2. 安装需要的依赖 `pip3 install PyQt6 python-docx pyinstaller openpyxl markdown`
 3. 开发脚本 [advanced-word-replacer-app.py](source%2Fadvanced-word-replacer-app.py) 、[Word_Replacer.spec](source%2FWord_Replacer.spec)
 4. 下载需要的图标[Free Simple Line Iconpack (50 icons) | Just Icon](https://www.iconarchive.com/show/free-simple-line-icons-by-justicon.html)
 5. 将图标转为 icon [PNG to ICNS | CloudConvert](https://cloudconvert.com/png-to-icns)
 6. 将上述文件放在同一个文件夹下，然后在这个目录下，执行打包脚本 `python3 -m PyInstaller Word_Replacer.spec`
 7. 打包之后的可执行文件在同目录的 dist 文件夹下，双击即可运行
+
+优化文件预览
+
+`pip3 install markdown`
+`brew install libxml2 libxslt`
+`pip3 install docx2html`
 
 ## 如何使用
 

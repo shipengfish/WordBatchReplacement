@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多格式文本替换器 - 高效的文本批量处理工具</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700&family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --background-color: #f8f9fa;
+            --text-color: #333;
+            --light-gray: #e9ecef;
+            --dark-gray: #495057;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Noto Sans SC', 'Poppins', sans-serif;
+            line-height: 1.8;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        header {
+            background: linear-gradient(135deg, var(--primary-color), #2980b9);
+            color: white;
+            text-align: center;
+            padding: 60px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml;charset=utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"%3E%3Cpath fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,186.7C384,213,480,235,576,213.3C672,192,768,128,864,128C960,128,1056,192,1152,213.3C1248,235,1344,213,1392,202.7L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"%3E%3C/path%3E%3C/svg%3E') no-repeat bottom;
+            background-size: cover;
+            pointer-events: none; /* 添加这一行 */
+        }
+        header .container {
+            position: relative; /* 添加这一行 */
+            z-index: 1; /* 添加这一行 */
+        }
+        h1 {
+            font-size: 3.2em;
+            margin-bottom: 15px;
+            letter-spacing: -1px;
+            font-weight: 700;
+            position: relative;
+        }
+        h2 {
+            color: var(--secondary-color);
+            font-size: 2.5em;
+            margin-top: 60px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 700;
+        }
+        h3 {
+            color: var(--dark-gray);
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        .hero-text {
+            font-size: 1.3em;
+            max-width: 700px;
+            margin: 0 auto 25px;
+            opacity: 0.9;
+            position: relative;
+        }
+        .screenshot {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            margin: 50px 0;
+            transition: all 0.3s ease;
+        }
+        .screenshot:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+        .feature-item {
+            background-color: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        .feature-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        .feature-icon {
+            font-size: 2.3em;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        .use-cases {
+            background-color: white;
+            border-radius: 12px;
+            padding: 50px;
+            margin: 60px 0;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+        }
+        .use-cases ul {
+            padding-left: 20px;
+            list-style-type: none;
+        }
+        .use-cases li {
+            margin-bottom: 15px;
+            position: relative;
+            padding-left: 30px;
+        }
+        .use-cases li::before {
+            content: '\f00c';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            color: var(--accent-color);
+            position: absolute;
+            left: 0;
+            top: 5px;
+        }
+        .use-cases .more {
+            font-style: italic;
+            color: var(--dark-gray);
+        }
+        .cta-section {
+            text-align: center;
+            margin: 60px 0;
+        }
+        .download-btn {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 12px 35px;
+            text-decoration: none;
+            border-radius: 50px;
+            margin: 10px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 1em;
+        }
+        .download-btn:hover {
+            background-color: #c0392b;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+        footer {
+            background-color: var(--secondary-color);
+            color: white;
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 60px;
+        }
+        #download {
+            padding-top: 60px;
+            margin-top: -60px;
+        }
+        @media (max-width: 1024px) {
+            .container {
+                max-width: 90%;
+            }
+        }
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.6em;
+            }
+            h2 {
+                font-size: 2em;
+            }
+            .hero-text {
+                font-size: 1.1em;
+            }
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+            .use-cases {
+                padding: 30px;
+            }
+        }
+        @media (max-width: 480px) {
+            body {
+                font-size: 15px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            h2 {
+                font-size: 1.6em;
+            }
+            .hero-text {
+                font-size: 1em;
+            }
+            .container {
+                padding: 0 15px;
+            }
+            .use-cases {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="container">
+        <h1>多格式文本替换器</h1>
+        <p class="hero-text">高效、便捷的文本批量处理工具 - 让文本编辑变得轻而易举！</p>
+        <a href="#download" class="download-btn">立即下载</a>
+    </div>
+</header>
+
+<main class="container">
+    <section>
+        <h2>直观易用的界面</h2>
+        <p>我们的多格式文本替换器提供了清晰、直观的用户界面，让您轻松管理文件和替换规则。无论您是个人用户还是企业专业人士，都能迅速上手，提高工作效率。</p>
+        <img src="./sc.jpg" alt="多格式文本替换器界面截图" class="screenshot">
+    </section>
+
+    <section>
+        <h2>强大功能，一触即发</h2>
+        <div class="feature-grid">
+            <div class="feature-item">
+                <i class="fas fa-file-alt feature-icon"></i>
+                <h3>多格式支持</h3>
+                <p>Word、Excel、文本、Markdown等多种格式，一站式处理。</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-layer-group feature-icon"></i>
+                <h3>批量处理</h3>
+                <p>轻松添加多个文件和文件夹，批量执行替换操作。</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-cogs feature-icon"></i>
+                <h3>灵活规则</h3>
+                <p>自定义替换规则，满足各种复杂的文本处理需求。</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-eye feature-icon"></i>
+                <h3>实时预览</h3>
+                <p>即时查看文件内容，确保替换效果符合预期。</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-bolt feature-icon"></i>
+                <h3>高效并发</h3>
+                <p>多线程处理，显著提升大量文件的处理速度。</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-undo feature-icon"></i>
+                <h3>操作可撤销</h3>
+                <p>误操作无忧，轻松撤销上一次替换操作。</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="use-cases">
+        <h2>适用场景 - 释放您的生产力</h2>
+        <ul>
+            <li><strong>文档标准化：</strong>快速统一大量文档中的术语、格式或样式，确保企业文档的一致性。</li>
+            <li><strong>数据清理：</strong>轻松处理 Excel 表格中的异常数据，如删除多余空格、统一日期格式等。</li>
+            <li><strong>代码重构：</strong>批量更新代码库中的函数名、变量名或注释，提高开发效率。</li>
+            <li><strong>内容更新：</strong>快速更新网站或博客中的过时信息，如产品名称、价格或联系方式。</li>
+            <li><strong>翻译辅助：</strong>协助翻译人员统一术语翻译，提高翻译质量和效率。</li>
+            <li><strong>学术研究：</strong>批量处理研究数据，统一格式，为后续分析做准备。</li>
+            <li class="more"><strong>更多场景：</strong>等待您的探索...我们的工具远不止于此，期待您发现更多场景！</li>
+        </ul>
+    </section>
+
+    <section id="download" class="cta-section">
+        <h2>立即下载 - 开启效率之旅</h2>
+        <p>选择适合您操作系统的版本：</p>
+        <a href="https://www.alipan.com/s/Q4oJcpfXfSN" class="download-btn" target="_blank"><i class="fab fa-windows"></i> Windows 版下载</a>
+        <a href="#" class="download-btn" onclick="alert('Mac版本正在开发中，敬请期待！'); return false;"><i class="fab fa-apple"></i> Mac 版下载</a>
+    </section>
+</main>
+
+<footer>
+    <div class="container">
+        <p>© 2024 多格式文本替换器. 保留所有权利。</p>
+    </div>
+</footer>
+
+</body>
+</html>
