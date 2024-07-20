@@ -164,147 +164,62 @@ class MultiFormatReplacerApp(QMainWindow):
         self.initUI()
         self.replacement_history = []
         self.temp_dir = tempfile.mkdtemp()
-        self.file_set = set()  # 用于存储已添加的文件路径
+        self.file_set = set()
 
-        # 启用拖放
         self.setAcceptDrops(True)
 
         self.search_timer = QTimer()
         self.search_timer.setSingleShot(True)
         self.search_timer.timeout.connect(self.update_file_list)
 
+        self.is_dark_mode = False
+        self.set_style()
+
     def initUI(self):
         self.setStyle(QStyleFactory.create('Fusion'))
-        self.setStyleSheet("""
-            QMainWindow {
-                background-color: #2c2c2e;
-                color: #ffffff;
-            }
-            QPushButton {
-                background-color: #3a3a3c;
-                color: #ffffff;
-                border: none;
-                padding: 8px 16px;
-                border-radius: 8px;
-                font-size: 14px;
-                transition: background-color 0.2s;
-            }
-            QPushButton:hover {
-                background-color: #5a5a5c;
-            }
-            QPushButton:pressed {
-                background-color: #2a2a2c;
-            }
-            QTableWidget {
-                background-color: #3a3a3c;
-                color: #ffffff;
-                border: none;
-                gridline-color: #5a5a5c;
-                alternate-background-color: #454547;
-            }
-            QTableWidget::item:selected {
-                background-color: #007aff;
-            }
-            QHeaderView::section {
-                background-color: #5a5a5c;
-                color: #ffffff;
-                padding: 8px;
-                border: none;
-            }
-            QLabel {
-                color: #ffffff;
-                font-size: 14px;
-            }
-            QComboBox {
-                background-color: #3a3a3c;
-                color: #ffffff;
-                border: none;
-                padding: 6px;
-                border-radius: 6px;
-            }
-            QComboBox QAbstractItemView {
-                background-color: #3a3a3c;
-                color: #ffffff;
-                selection-background-color: #5a5a5c;
-            }
-            QTextEdit, QTextBrowser {
-                background-color: #3a3a3c;
-                color: #ffffff;
-                border: none;
-                border-radius: 8px;
-                padding: 8px;
-            }
-            QSplitter::handle {
-                background-color: #5a5a5c;
-            }
-            QSplitter::handle:hover {
-                background-color: #7a7a7c;
-            }
-            QListWidget {
-                background-color: #3a3a3c;
-                color: #ffffff;
-                border: none;
-                border-radius: 8px;
-                padding: 8px;
-            }
-            QProgressBar {
-                border: none;
-                background-color: #5a5a5c;
-                text-align: center;
-                color: #ffffff;
-            }
-            QProgressBar::chunk {
-                background-color: #007aff;
-                border-radius: 5px;
-            }
-            QLineEdit {
-                background-color: #3a3a3c;
-                color: #ffffff;
-                border: 1px solid #5a5a5c;
-                padding: 6px;
-                border-radius: 6px;
-            }
-            QSpinBox {
-                background-color: #3a3a3c;
-                color: #ffffff;
-                border: 1px solid #5a5a5c;
-                padding: 6px;
-                border-radius: 6px;
-            }
-            QListWidget::item:selected, QTableWidget::item:selected {
-                background-color: #007aff;
-                border: 2px solid #ffffff;
-            }
-            QLineEdit:focus, QComboBox:focus {
-                border: 1px solid #007aff;
-            }
-            QComboBox::drop-down {
-                border: none;
-                width: 20px;
-            }
-            QComboBox::down-arrow {
-                image: url(path_to_down_arrow_icon);
-                width: 12px;
-                height: 12px;
-            }
-            QScrollBar:vertical {
-                border: none;
-                background: #3a3a3c;
-                width: 10px;
-                margin: 0px 0px 0px 0px;
-            }
-            QScrollBar::handle:vertical {
-                background: #5a5a5c;
-                min-height: 20px;
-                border-radius: 5px;
-            }
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-                height: 0px;
-            }
-        """)
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         main_layout = QHBoxLayout(central_widget)
+
+        # 创建顶部工具栏
+        toolbar = QToolBar()
+        self.addToolBar(Qt.ToolBarArea.TopToolBarArea, toolbar)
+
+        # 添加模式切换按钮到工具栏
+        self.mode_switch_button = QPushButton()
+        self.mode_switch_button.setIcon(QIcon.fromTheme("weather-clear"))
+        self.mode_switch_button.setFixedSize(32, 32)
+        self.mode_switch_button.clicked.connect(self.toggle_mode)
+        self.mode_switch_button.setStyleSheet("""
+            QPushButton {
+                border: none;
+                border-radius: 16px;
+                background-color: transparent;
+            }
+            QPushButton:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+        """)
+        toolbar.addWidget(self.mode_switch_button)
+
+        toolbar.addSeparator()
+
+        # 在工具栏中添加其他常用操作按钮
+        add_file_action = QAction(QIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_FileIcon)), "添加文件", self)
+        add_file_action.triggered.connect(self.add_files)
+        toolbar.addAction(add_file_action)
+
+        add_folder_action = QAction(QIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_DirIcon)), "添加文件夹", self)
+        add_folder_action.triggered.connect(self.add_folder)
+        toolbar.addAction(add_folder_action)
+
+        replace_action = QAction(QIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserReload)), "执行替换", self)
+        replace_action.triggered.connect(self.replace_text)
+        toolbar.addAction(replace_action)
+
+        undo_action = QAction(QIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_ArrowBack)), "撤销上次替换", self)
+        undo_action.triggered.connect(self.undo_last_replacement)
+        toolbar.addAction(undo_action)
 
         # 创建主分割器
         main_splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -316,7 +231,7 @@ class MultiFormatReplacerApp(QMainWindow):
         left_layout = QVBoxLayout(left_panel)
 
         file_label = QLabel("文件列表")
-        file_label.setStyleSheet("font-weight: bold;")
+        file_label.setStyleSheet("font-size: 16px; font-weight: bold;")
         left_layout.addWidget(file_label)
 
         # 添加搜索和过滤布局
@@ -369,7 +284,6 @@ class MultiFormatReplacerApp(QMainWindow):
         left_layout.addLayout(file_buttons_layout)
 
         main_splitter.addWidget(left_panel)
-
         # 右侧面板：规则、预览和日志
         right_panel = QFrame()
         right_panel.setFrameShape(QFrame.Shape.StyledPanel)
@@ -382,7 +296,7 @@ class MultiFormatReplacerApp(QMainWindow):
         rules_widget = QWidget()
         rules_layout = QVBoxLayout(rules_widget)
         rules_label = QLabel("替换规则")
-        rules_label.setStyleSheet("font-weight: bold;")
+        rules_label.setStyleSheet("font-size: 16px; font-weight: bold;")
         rules_layout.addWidget(rules_label)
 
         self.rules_table = QTableWidget(0, 2)
@@ -440,7 +354,7 @@ class MultiFormatReplacerApp(QMainWindow):
         preview_widget = QWidget()
         preview_layout = QVBoxLayout(preview_widget)
         preview_label = QLabel('文件预览')
-        preview_label.setStyleSheet("font-weight: bold;")
+        preview_label.setStyleSheet("font-size: 16px; font-weight: bold;")
         preview_layout.addWidget(preview_label)
         self.preview_area = QTextBrowser()
         preview_layout.addWidget(self.preview_area)
@@ -450,7 +364,7 @@ class MultiFormatReplacerApp(QMainWindow):
         log_widget = QWidget()
         log_layout = QVBoxLayout(log_widget)
         log_label = QLabel('操作日志')
-        log_label.setStyleSheet("font-weight: bold;")
+        log_label.setStyleSheet("font-size: 16px; font-weight: bold;")
         log_layout.addWidget(log_label)
         self.log_area = QTextEdit()
         self.log_area.setReadOnly(True)
@@ -482,6 +396,144 @@ class MultiFormatReplacerApp(QMainWindow):
         # Connect file selection to preview
         self.file_list.itemSelectionChanged.connect(self.update_preview)
 
+    def set_style(self):
+        if self.is_dark_mode:
+            self.setStyleSheet("""
+                QMainWindow, QWidget {
+                    background-color: #2c2c2e;
+                    color: #ffffff;
+                }
+                QPushButton {
+                    background-color: #3a3a3c;
+                    color: #ffffff;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 8px;
+                    font-size: 14px;
+                }
+                QPushButton:hover {
+                    background-color: #5a5a5c;
+                }
+                QPushButton:pressed {
+                    background-color: #2a2a2c;
+                }
+                QTableWidget {
+                    background-color: #3a3a3c;
+                    color: #ffffff;
+                    border: none;
+                    gridline-color: #5a5a5c;
+                    alternate-background-color: #454547;
+                }
+                QTableWidget::item:selected {
+                    background-color: #007aff;
+                }
+                QHeaderView::section {
+                    background-color: #5a5a5c;
+                    color: #ffffff;
+                    padding: 8px;
+                    border: none;
+                }
+                QLabel {
+                    color: #ffffff;
+                    font-size: 14px;
+                }
+                QComboBox, QLineEdit, QSpinBox {
+                    background-color: #3a3a3c;
+                    color: #ffffff;
+                    border: 1px solid #5a5a5c;
+                    padding: 6px;
+                    border-radius: 6px;
+                }
+                QTextEdit, QTextBrowser, QListWidget {
+                    background-color: #3a3a3c;
+                    color: #ffffff;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 8px;
+                }
+                QProgressBar {
+                    border: none;
+                    background-color: #5a5a5c;
+                    text-align: center;
+                    color: #ffffff;
+                }
+                QProgressBar::chunk {
+                    background-color: #007aff;
+                    border-radius: 5px;
+                }
+            """)
+            self.mode_switch_button.setIcon(QIcon.fromTheme("weather-clear-night"))
+        else:
+            self.setStyleSheet("""
+                QMainWindow, QWidget {
+                    background-color: #f0f0f0;
+                    color: #000000;
+                }
+                QPushButton {
+                    background-color: #e0e0e0;
+                    color: #000000;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 8px;
+                    font-size: 14px;
+                }
+                QPushButton:hover {
+                    background-color: #d0d0d0;
+                }
+                QPushButton:pressed {
+                    background-color: #c0c0c0;
+                }
+                QTableWidget {
+                    background-color: #ffffff;
+                    color: #000000;
+                    border: 1px solid #d0d0d0;
+                    gridline-color: #e0e0e0;
+                    alternate-background-color: #f5f5f5;
+                }
+                QTableWidget::item:selected {
+                    background-color: #3498db;
+                    color: #ffffff;
+                }
+                QHeaderView::section {
+                    background-color: #e0e0e0;
+                    color: #000000;
+                    padding: 8px;
+                    border: none;
+                }
+                QLabel {
+                    color: #000000;
+                    font-size: 14px;
+                }
+                QComboBox, QLineEdit, QSpinBox {
+                    background-color: #ffffff;
+                    color: #000000;
+                    border: 1px solid #d0d0d0;
+                    padding: 6px;
+                    border-radius: 6px;
+                }
+                QTextEdit, QTextBrowser, QListWidget {
+                    background-color: #ffffff;
+                    color: #000000;
+                    border: 1px solid #d0d0d0;
+                    border-radius: 8px;
+                    padding: 8px;
+                }
+                QProgressBar {
+                    border: none;
+                    background-color: #e0e0e0;
+                    text-align: center;
+                    color: #000000;
+                }
+                QProgressBar::chunk {
+                    background-color: #3498db;
+                    border-radius: 5px;
+                }
+            """)
+            self.mode_switch_button.setIcon(QIcon.fromTheme("weather-clear"))
+    def toggle_mode(self):
+        self.is_dark_mode = not self.is_dark_mode
+        self.set_style()
+
     def show_file_list_context_menu(self, position):
         menu = QMenu()
         menu.setStyleSheet("""
@@ -492,6 +544,15 @@ class MultiFormatReplacerApp(QMainWindow):
             }
             QMenu::item:selected {
                 background-color: #5a5a5c;
+            }
+        """ if self.is_dark_mode else """
+            QMenu {
+                background-color: #ffffff;
+                color: #000000;
+                border: 1px solid #d0d0d0;
+            }
+            QMenu::item:selected {
+                background-color: #e0e0e0;
             }
         """)
         remove_action = menu.addAction("移除选中")
@@ -592,12 +653,12 @@ class MultiFormatReplacerApp(QMainWindow):
                     self.rules_table.item(row, 0).setBackground(QColor(255, 200, 100))
                     self.rules_table.item(row, 1).setBackground(QColor(255, 200, 100))
                 else:
-                    self.rules_table.item(row, 0).setBackground(QColor(60, 60, 62))
-                    self.rules_table.item(row, 1).setBackground(QColor(60, 60, 62))
+                    self.rules_table.item(row, 0).setBackground(QColor(60, 60, 62) if self.is_dark_mode else QColor(255, 255, 255))
+                    self.rules_table.item(row, 1).setBackground(QColor(60, 60, 62) if self.is_dark_mode else QColor(255, 255, 255))
                     rules.add((old_text, new_text))
             else:
-                self.rules_table.item(row, 0).setBackground(QColor(60, 60, 62))
-                self.rules_table.item(row, 1).setBackground(QColor(60, 60, 62))
+                self.rules_table.item(row, 0).setBackground(QColor(60, 60, 62) if self.is_dark_mode else QColor(255, 255, 255))
+                self.rules_table.item(row, 1).setBackground(QColor(60, 60, 62) if self.is_dark_mode else QColor(255, 255, 255))
 
     def replace_text(self):
         files = [self.file_list.item(i).text() for i in range(self.file_list.count())]
@@ -636,7 +697,6 @@ class MultiFormatReplacerApp(QMainWindow):
         self.worker.start()
 
         self.replacement_history.append((files, rules, backup_dir))
-
     def update_progress(self, value):
         if self.progress_bar.value() < value:
             animation = QPropertyAnimation(self.progress_bar, b"value")
@@ -839,7 +899,7 @@ class MultiFormatReplacerApp(QMainWindow):
         for file in self.file_set:
             file_name = os.path.basename(file).lower()
             if (filter_text == "所有文件" or file.endswith(filter_text.split('.')[-1].strip(')'))) and \
-               (not search_text or fnmatch.fnmatch(file_name, f"*{search_text}*")):
+                    (not search_text or fnmatch.fnmatch(file_name, f"*{search_text}*")):
                 self.file_list.addItem(file)
 
     def on_search_text_changed(self):
@@ -852,24 +912,46 @@ class MultiFormatReplacerApp(QMainWindow):
         msg_box.setText(text)
         msg_box.setIcon(icon)
         msg_box.setStandardButtons(buttons)
-        msg_box.setStyleSheet("""
-            QMessageBox {
-                background-color: #3a3a3c;
-            }
-            QMessageBox QLabel {
-                color: #ffffff;
-            }
-            QPushButton {
-                background-color: #5a5a5c;
-                color: #ffffff;
-                border: none;
-                padding: 5px 15px;
-                border-radius: 3px;
-            }
-            QPushButton:hover {
-                background-color: #7a7a7c;
-            }
-        """)
+
+        if self.is_dark_mode:
+            msg_box.setStyleSheet("""
+                QMessageBox {
+                    background-color: #2c2c2e;
+                }
+                QMessageBox QLabel {
+                    color: #ffffff;
+                }
+                QPushButton {
+                    background-color: #3a3a3c;
+                    color: #ffffff;
+                    border: none;
+                    padding: 5px 15px;
+                    border-radius: 3px;
+                }
+                QPushButton:hover {
+                    background-color: #5a5a5c;
+                }
+            """)
+        else:
+            msg_box.setStyleSheet("""
+                QMessageBox {
+                    background-color: #f0f0f0;
+                }
+                QMessageBox QLabel {
+                    color: #000000;
+                }
+                QPushButton {
+                    background-color: #e0e0e0;
+                    color: #000000;
+                    border: none;
+                    padding: 5px 15px;
+                    border-radius: 3px;
+                }
+                QPushButton:hover {
+                    background-color: #d0d0d0;
+                }
+            """)
+
         return msg_box.exec()
 
     def closeEvent(self, event):
@@ -883,4 +965,3 @@ if __name__ == '__main__':
     ex = MultiFormatReplacerApp()
     ex.show()
     sys.exit(app.exec())
-

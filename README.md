@@ -65,6 +65,7 @@
 `pip3 install markdown`
 `brew install libxml2 libxslt`
 `pip3 install docx2html`
+`pip3 install qt-material`
 
 ## 如何使用
 
